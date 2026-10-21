@@ -1,0 +1,141 @@
+<div class="product-table-container">
+  <p-table
+    #dt
+    [value]="products()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5, 10, 20, 50]"
+    [loading]="loading()"
+    [globalFilterFields]="['name', 'barcode', 'description', 'unitOfMeasure']"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} produtos"
+    styleClass="p-datatable-striped"
+    dataKey="id"
+  >
+    <!-- Header -->
+    <ng-template #caption>
+      <div class="table-header-content">
+        <div class="header-left">
+          <h3 class="table-title">Catálogo de Produtos</h3>
+          <span class="table-subtitle">Cadastro de itens, unidades de medida e códigos de barras (EAN/SKU)</span>
+        </div>
+
+        <div class="header-actions">
+          <div class="search-box">
+            <i class="pi pi-search search-icon"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Buscar por nome, código ou unidade..."
+              (input)="onGlobalFilter(dt, $event)"
+              class="global-search-input"
+            />
+          </div>
+
+          <p-button
+            label="Novo Produto"
+            icon="pi pi-plus"
+            styleClass="p-button-primary"
+            (onClick)="openNewProduct.emit()"
+          ></p-button>
+
+          <p-button
+            icon="pi pi-refresh"
+            styleClass="p-button-secondary p-button-icon-only"
+            title="Atualizar Produtos"
+            [loading]="loading()"
+            (onClick)="refresh.emit()"
+          ></p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Colunas -->
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id" style="width: 5rem">
+          ID <p-sort-icon field="id"></p-sort-icon>
+        </th>
+        <th pSortableColumn="name">
+          Nome do Produto <p-sort-icon field="name"></p-sort-icon>
+        </th>
+        <th pSortableColumn="barcode" style="width: 11rem">
+          Código de Barras <p-sort-icon field="barcode"></p-sort-icon>
+        </th>
+        <th pSortableColumn="unitOfMeasure" style="width: 7.5rem; text-align: center">
+          Unidade <p-sort-icon field="unitOfMeasure"></p-sort-icon>
+        </th>
+        <th pSortableColumn="createdAt" style="width: 10.5rem">
+          Cadastrado em <p-sort-icon field="createdAt"></p-sort-icon>
+        </th>
+        <th style="width: 7rem; text-align: center">Ações</th>
+      </tr>
+    </ng-template>
+
+    <!-- Linhas -->
+    <ng-template #body let-prod>
+      <tr>
+        <td class="font-mono text-muted">#{{ prod.id }}</td>
+        <td>
+          <div class="product-cell">
+            <span class="product-name">{{ prod.name }}</span>
+            @if (prod.description) {
+              <span class="product-desc">{{ prod.description }}</span>
+            }
+          </div>
+        </td>
+        <td>
+          <span class="barcode-badge">{{ prod.barcode || 'S/N' }}</span>
+        </td>
+        <td style="text-align: center">
+          <span class="uom-pill">{{ prod.unitOfMeasure || 'UN' }}</span>
+        </td>
+        <td class="text-sm text-muted">
+          {{ prod.createdAt ? (prod.createdAt | date:'dd/MM/yyyy HH:mm') : '—' }}
+        </td>
+        <td style="text-align: center">
+          <div class="table-actions">
+            <button
+              type="button"
+              class="action-btn edit-btn"
+              title="Editar Produto"
+              (click)="editProduct.emit(prod)"
+            >
+              <i class="pi pi-pencil"></i>
+            </button>
+            <button
+              type="button"
+              class="action-btn delete-btn"
+              title="Excluir Produto"
+              (click)="deleteProduct.emit(prod.id)"
+            >
+              <i class="pi pi-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty -->
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="6" class="empty-state-cell">
+          <div class="empty-state">
+            <div class="empty-icon-wrap">
+              <i class="pi pi-box empty-icon"></i>
+            </div>
+            <h4 class="empty-title">Nenhum produto cadastrado</h4>
+            <p class="empty-subtitle">Clique no botão abaixo para adicionar o primeiro item ao catálogo de produtos.</p>
+            <p-button
+              label="Cadastrar Primeiro Produto"
+              icon="pi pi-plus"
+              styleClass="p-button-primary mt-2"
+              (onClick)="openNewProduct.emit()"
+            ></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+

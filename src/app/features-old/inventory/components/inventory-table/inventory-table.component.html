@@ -1,0 +1,190 @@
+<div class="inventory-table-container">
+  <p-table
+    #dt
+    [value]="items()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5, 10, 20, 50]"
+    [loading]="loading()"
+    [globalFilterFields]="['productName', 'barcode', 'description', 'unitOfMeasure']"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} itens"
+    styleClass="p-datatable-striped"
+    dataKey="productId"
+  >
+    <!-- Header da Tabela -->
+    <ng-template #caption>
+      <div class="table-header-content">
+        <div class="header-left">
+          <h3 class="table-title">Inventário de Estoque</h3>
+          <span class="table-subtitle">Visão consolidada de produtos, saldo físico, custo médio e valor patrimonial</span>
+        </div>
+
+        <div class="header-actions">
+          <!-- Filtro de Busca Global -->
+          <div class="search-box">
+            <i class="pi pi-search search-icon"></i>
+            <input
+              pInputText
+              type="text"
+              placeholder="Buscar produto, código ou unidade..."
+              (input)="onGlobalFilter(dt, $event)"
+              class="global-search-input"
+            />
+          </div>
+
+          <!-- Botão Nova Transação -->
+          <p-button
+            label="Nova Movimentação"
+            icon="pi pi-arrow-right-arrow-left"
+            styleClass="p-button-primary"
+            (onClick)="openTransaction.emit({})"
+          ></p-button>
+
+          <!-- Botão Recarregar -->
+          <p-button
+            icon="pi pi-refresh"
+            styleClass="p-button-secondary p-button-icon-only"
+            title="Recarregar Inventário"
+            [loading]="loading()"
+            (onClick)="refresh.emit()"
+          ></p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Cabeçalho das Colunas -->
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="productId" style="width: 5rem">
+          Cód <p-sort-icon field="productId"></p-sort-icon>
+        </th>
+        <th pSortableColumn="productName">
+          Produto <p-sort-icon field="productName"></p-sort-icon>
+        </th>
+        <th pSortableColumn="barcode" style="width: 9rem">
+          Código Barras <p-sort-icon field="barcode"></p-sort-icon>
+        </th>
+        <th pSortableColumn="unitOfMeasure" style="width: 6.5rem; text-align: center">
+          Unidade <p-sort-icon field="unitOfMeasure"></p-sort-icon>
+        </th>
+        <th pSortableColumn="currentQuantity" style="width: 9.5rem; text-align: right">
+          Qtd em Estoque <p-sort-icon field="currentQuantity"></p-sort-icon>
+        </th>
+        <th pSortableColumn="currentAverageCost" style="width: 10rem; text-align: right">
+          Custo Médio <p-sort-icon field="currentAverageCost"></p-sort-icon>
+        </th>
+        <th pSortableColumn="totalValue" style="width: 10.5rem; text-align: right">
+          Valor Total <p-sort-icon field="totalValue"></p-sort-icon>
+        </th>
+        <th pSortableColumn="updatedAt" style="width: 9.5rem">
+          Última Atualiz. <p-sort-icon field="updatedAt"></p-sort-icon>
+        </th>
+        <th style="width: 7.5rem; text-align: center">Ações Rápidas</th>
+      </tr>
+    </ng-template>
+
+    <!-- Linhas dos Dados -->
+    <ng-template #body let-item>
+      <tr>
+        <!-- ID -->
+        <td class="font-mono text-muted">
+          #{{ item.productId }}
+        </td>
+
+        <!-- Nome & Descrição -->
+        <td>
+          <div class="product-cell">
+            <span class="product-name">{{ item.productName }}</span>
+            @if (item.description) {
+              <span class="product-desc">{{ item.description }}</span>
+            }
+          </div>
+        </td>
+
+        <!-- Código de Barras -->
+        <td>
+          <span class="barcode-badge">
+            {{ item.barcode || 'S/N' }}
+          </span>
+        </td>
+
+        <!-- Unidade de Medida -->
+        <td style="text-align: center">
+          <span class="uom-pill">{{ item.unitOfMeasure || '-' }}</span>
+        </td>
+
+        <!-- Quantidade em Estoque -->
+        <td style="text-align: right">
+          <div class="stock-qty-cell">
+            <span class="stock-number" [ngClass]="getQuantityClass(item.currentQuantity)">
+              {{ item.currentQuantity | number:'1.0-3' }}
+            </span>
+            <span class="stock-status-dot" [ngClass]="getDotClass(item.currentQuantity)"></span>
+          </div>
+        </td>
+
+        <!-- Custo Médio Unitário -->
+        <td style="text-align: right; font-weight: 500">
+          {{ item.currentAverageCost | currency:'BRL':'symbol':'1.2-2' }}
+        </td>
+
+        <!-- Valor Total em Estoque -->
+        <td style="text-align: right; font-weight: 700; color: var(--primary-deep)">
+          {{ item.totalValue | currency:'BRL':'symbol':'1.2-2' }}
+        </td>
+
+        <!-- Data da Última Atualização -->
+        <td class="text-muted text-sm">
+          {{ item.updatedAt ? (item.updatedAt | date:'dd/MM/yyyy HH:mm') : '—' }}
+        </td>
+
+        <!-- Ações Rápidas (Entrada / Saída) -->
+        <td style="text-align: center">
+          <div class="action-buttons">
+            <button
+              type="button"
+              class="quick-action-btn quick-inflow"
+              title="Lançar Entrada para este item"
+              (click)="onQuickAction(item, TransactionType.INFLOW)"
+            >
+              <i class="pi pi-plus"></i>
+            </button>
+
+            <button
+              type="button"
+              class="quick-action-btn quick-outflow"
+              title="Lançar Saída para este item"
+              [disabled]="item.currentQuantity <= 0"
+              (click)="onQuickAction(item, TransactionType.OUTFLOW)"
+            >
+              <i class="pi pi-minus"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Estado Vazio (Nenhum registro) -->
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="9" class="empty-state-cell">
+          <div class="empty-state">
+            <div class="empty-icon-wrap">
+              <i class="pi pi-inbox empty-icon"></i>
+            </div>
+            <h4 class="empty-title">Nenhum registro de inventário encontrado</h4>
+            <p class="empty-subtitle">Cadastre novos produtos no catálogo ou realize uma movimentação de estoque para começar.</p>
+            <p-button
+              label="Realizar Movimentação"
+              icon="pi pi-arrow-right-arrow-left"
+              styleClass="p-button-primary"
+              (onClick)="openTransaction.emit({})"
+            ></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
