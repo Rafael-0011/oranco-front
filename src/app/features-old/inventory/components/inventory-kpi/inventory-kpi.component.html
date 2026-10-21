@@ -1,0 +1,74 @@
+<div class="kpi-grid">
+  <!-- Total em Estoque -->
+  <div class="kpi-card-item">
+    <p-card styleClass="kpi-card card-total">
+      <div class="kpi-content">
+        <div class="kpi-info">
+          <span class="kpi-label">Valor Total em Estoque</span>
+          <h2 class="kpi-value text-primary">
+            {{ summary().totalStockValue | currency:'BRL':'symbol':'1.2-2' }}
+          </h2>
+          <span class="kpi-subtext">Patrimônio imobilizado atual</span>
+        </div>
+        <div class="kpi-icon-wrapper bg-blue">
+          <i class="pi pi-dollar"></i>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Itens Cadastrados -->
+  <div class="kpi-card-item">
+    <p-card styleClass="kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-info">
+          <span class="kpi-label">Produtos Distintos</span>
+          <h2 class="kpi-value">
+            {{ summary().distinctProductsCount | number }}
+          </h2>
+          <span class="kpi-subtext">Itens ativos no catálogo</span>
+        </div>
+        <div class="kpi-icon-wrapper bg-slate">
+          <i class="pi pi-box"></i>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Volume Físico Total -->
+  <div class="kpi-card-item">
+    <p-card styleClass="kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-info">
+          <span class="kpi-label">Volume Total (Unidades)</span>
+          <h2 class="kpi-value text-emerald">
+            {{ summary().totalItemsCount | number:'1.0-2' }}
+          </h2>
+          <span class="kpi-subtext">Unidades físicas em inventário</span>
+        </div>
+        <div class="kpi-icon-wrapper bg-emerald">
+          <i class="pi pi-chart-line"></i>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Custo Médio Geral -->
+  <div class="kpi-card-item">
+    <p-card styleClass="kpi-card">
+      <div class="kpi-content">
+        <div class="kpi-info">
+          <span class="kpi-label">Custo Médio Ponderado</span>
+          <h2 class="kpi-value">
+            {{ summary().weightedAverageCost | currency:'BRL':'symbol':'1.2-2' }}
+          </h2>
+          <span class="kpi-subtext">Custo médio por unidade em estoque</span>
+        </div>
+        <div class="kpi-icon-wrapper bg-amber">
+          <i class="pi pi-calculator"></i>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>
+

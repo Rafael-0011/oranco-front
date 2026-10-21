@@ -1,0 +1,120 @@
+<div class="transaction-table-container">
+  <p-table
+    #dt
+    [value]="transactions()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[5, 10, 20, 50]"
+    [loading]="loading()"
+    [globalFilterFields]="['productName', 'transactionType', 'notes']"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} movimentações"
+    styleClass="p-datatable-striped"
+  >
+    <!-- Header -->
+    <ng-template #caption>
+      <div class="table-header-content">
+        <div class="header-left">
+          <h3 class="table-title">Histórico de Movimentações</h3>
+          <span class="table-subtitle">Auditoria de fluxos de entrada, saída e apuração contábil de CMV</span>
+        </div>
+
+        <div class="header-actions">
+          <p-button
+            label="Nova Movimentação"
+            icon="pi pi-plus"
+            styleClass="p-button-primary"
+            (onClick)="openNewTransaction.emit()"
+          ></p-button>
+
+          <p-button
+            icon="pi pi-refresh"
+            styleClass="p-button-secondary p-button-icon-only"
+            title="Atualizar Histórico"
+            [loading]="loading()"
+            (onClick)="refresh.emit()"
+          ></p-button>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Cabeçalho -->
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="id" style="width: 5rem">
+          ID <p-sort-icon field="id"></p-sort-icon>
+        </th>
+        <th pSortableColumn="transactionDate" style="width: 11rem">
+          Data/Hora <p-sort-icon field="transactionDate"></p-sort-icon>
+        </th>
+        <th pSortableColumn="productName">
+          Produto <p-sort-icon field="productName"></p-sort-icon>
+        </th>
+        <th pSortableColumn="transactionType" style="width: 9rem; text-align: center">
+          Tipo <p-sort-icon field="transactionType"></p-sort-icon>
+        </th>
+        <th pSortableColumn="quantity" style="width: 8rem; text-align: right">
+          Quantidade <p-sort-icon field="quantity"></p-sort-icon>
+        </th>
+        <th pSortableColumn="unitValue" style="width: 9rem; text-align: right">
+          Valor Unit. <p-sort-icon field="unitValue"></p-sort-icon>
+        </th>
+        <th pSortableColumn="cmv" style="width: 9.5rem; text-align: right">
+          CMV Apurado <p-sort-icon field="cmv"></p-sort-icon>
+        </th>
+        <th>Observações</th>
+      </tr>
+    </ng-template>
+
+    <!-- Linhas -->
+    <ng-template #body let-t>
+      <tr>
+        <td class="font-mono text-muted">#{{ t.id }}</td>
+        <td class="text-sm">
+          {{ t.transactionDate ? (t.transactionDate | date:'dd/MM/yyyy HH:mm') : '—' }}
+        </td>
+        <td>
+          <span class="product-name">{{ getProductName(t.productId) }}</span>
+        </td>
+        <td style="text-align: center">
+          <span
+            class="type-badge"
+            [class.badge-inflow]="t.transactionType === 'INFLOW'"
+            [class.badge-outflow]="t.transactionType === 'OUTFLOW'"
+          >
+            <i [class]="t.transactionType === 'INFLOW' ? 'pi pi-arrow-down-left' : 'pi pi-arrow-up-right'"></i>
+            {{ t.transactionType === 'INFLOW' ? 'Entrada' : 'Saída' }}
+          </span>
+        </td>
+        <td style="text-align: right; font-weight: 700">
+          {{ t.quantity | number:'1.0-3' }}
+        </td>
+        <td style="text-align: right">
+          {{ t.unitValue | currency:'BRL':'symbol':'1.2-2' }}
+        </td>
+        <td style="text-align: right; font-weight: 700" [class.text-red]="t.cmv">
+          {{ t.cmv != null ? (t.cmv | currency:'BRL':'symbol':'1.2-2') : '—' }}
+        </td>
+        <td class="text-sm text-muted">
+          {{ t.notes || '—' }}
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty -->
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="8" class="empty-state-cell">
+          <div class="empty-state">
+            <div class="empty-icon-wrap">
+              <i class="pi pi-list empty-icon"></i>
+            </div>
+            <h4 class="empty-title">Nenhuma movimentação registrada</h4>
+            <p class="empty-subtitle">Os lançamentos de entrada e saída efetuados aparecerão neste histórico com apuração contábil.</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+

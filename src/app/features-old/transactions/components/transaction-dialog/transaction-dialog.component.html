@@ -1,0 +1,184 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="true"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [closeOnEscape]="true"
+  [style]="{ width: '34rem', maxWidth: '95vw' }"
+  styleClass="logistic-modal"
+  (onHide)="handleClose()"
+>
+  <!-- Cabeçalho Estilizado do Modal -->
+  <ng-template #header>
+    <div class="dialog-header-custom">
+      <div
+        class="dialog-icon-circle"
+        [class.icon-inflow]="form.get('transactionType')?.value === TransactionType.INFLOW"
+        [class.icon-outflow]="form.get('transactionType')?.value === TransactionType.OUTFLOW"
+      >
+        <i [class]="form.get('transactionType')?.value === TransactionType.INFLOW ? 'pi pi-arrow-down-left' : 'pi pi-arrow-up-right'"></i>
+      </div>
+      <div class="dialog-header-text">
+        <h3 class="dialog-header-title">Nova Movimentação de Estoque</h3>
+        <span class="dialog-header-sub">Entrada, saída e apuração contábil em tempo real</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="transaction-form">
+    <!-- Tipo de Movimentação (Inflow / Outflow) -->
+    <div class="form-group">
+      <label class="form-label">Tipo de Movimentação *</label>
+      <div class="type-selector">
+        <button
+          type="button"
+          class="type-btn"
+          [class.active-inflow]="form.get('transactionType')?.value === TransactionType.INFLOW"
+          (click)="setTransactionType(TransactionType.INFLOW)"
+        >
+          <i class="pi pi-arrow-down-left"></i>
+          <span>Entrada (Inflow)</span>
+        </button>
+
+        <button
+          type="button"
+          class="type-btn"
+          [class.active-outflow]="form.get('transactionType')?.value === TransactionType.OUTFLOW"
+          (click)="setTransactionType(TransactionType.OUTFLOW)"
+        >
+          <i class="pi pi-arrow-up-right"></i>
+          <span>Saída (Outflow)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Seleção do Produto (p-select com appendTo="body" para não quebrar z-index) -->
+    <div class="form-group">
+      <label for="productId" class="form-label">Produto *</label>
+      <p-select
+        id="productId"
+        formControlName="productId"
+        [options]="productOptions()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecione um produto do estoque..."
+        [filter]="true"
+        filterBy="label"
+        appendTo="body"
+        styleClass="w-full"
+        (onChange)="onProductChange($event.value)"
+      ></p-select>
+
+      @if (selectedInventoryItem()) {
+        <div class="product-stock-banner">
+          <span>Estoque atual: <strong>{{ selectedInventoryItem()?.currentQuantity | number:'1.0-3' }} {{ selectedInventoryItem()?.unitOfMeasure }}</strong></span>
+          <span>Custo Médio: <strong>{{ selectedInventoryItem()?.currentAverageCost | currency:'BRL':'symbol':'1.2-2' }}</strong></span>
+        </div>
+      }
+
+      @if (form.get('productId')?.touched && form.get('productId')?.invalid) {
+        <small class="error-text">O produto é obrigatório.</small>
+      }
+    </div>
+
+    <!-- Grid: Quantidade e Valor Unitário -->
+    <div class="form-row">
+      <!-- Quantidade -->
+      <div class="form-group flex-1">
+        <label for="quantity" class="form-label">Quantidade *</label>
+        <input
+          pInputText
+          id="quantity"
+          type="number"
+          step="any"
+          min="0.001"
+          formControlName="quantity"
+          placeholder="Ex: 50"
+          class="w-full"
+        />
+        @if (form.get('quantity')?.touched && form.get('quantity')?.invalid) {
+          <small class="error-text">Informe uma quantidade válida maior que zero.</small>
+        }
+      </div>
+
+      <!-- Valor Unitário -->
+      <div class="form-group flex-1">
+        <label for="unitValue" class="form-label">
+          {{ form.get('transactionType')?.value === TransactionType.INFLOW ? 'Custo Unitário (R$) *' : 'Preço Ref. / Custo (R$)' }}
+        </label>
+        <input
+          pInputText
+          id="unitValue"
+          type="number"
+          step="0.01"
+          min="0"
+          formControlName="unitValue"
+          placeholder="0,00"
+          class="w-full"
+        />
+        @if (form.get('unitValue')?.touched && form.get('unitValue')?.invalid) {
+          <small class="error-text">Informe um valor unitário válido maior que zero.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Card de Resumo da Operação / CMV Estimado -->
+    <div
+      class="calc-summary-card"
+      [class.summary-inflow]="form.get('transactionType')?.value === TransactionType.INFLOW"
+      [class.summary-outflow]="form.get('transactionType')?.value === TransactionType.OUTFLOW"
+    >
+      <div class="summary-line">
+        <span class="text-muted">Operação Contábil:</span>
+        <strong class="font-semibold">{{ form.get('transactionType')?.value === TransactionType.INFLOW ? 'Aporte de Estoque (Entrada)' : 'Baixa de Estoque (Saída)' }}</strong>
+      </div>
+
+      @if (form.get('transactionType')?.value === TransactionType.INFLOW) {
+        <div class="summary-line">
+          <span>Total Financeiro da Compra:</span>
+          <strong class="text-emerald font-bold">{{ calculatedTotal | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+      } @else {
+        <div class="summary-line">
+          <span>CMV Estimado da Baixa:</span>
+          <strong class="text-red font-bold">{{ calculatedCmv | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+        <div class="summary-subline">
+          Calculado com base no custo médio de {{ (selectedInventoryItem()?.currentAverageCost || 0) | currency:'BRL':'symbol':'1.2-2' }}/un
+        </div>
+      }
+    </div>
+
+    <!-- Observações / Justificativa / NF -->
+    <div class="form-group">
+      <label for="notes" class="form-label">Observações / NF / Motivo</label>
+      <input
+        pInputText
+        id="notes"
+        type="text"
+        formControlName="notes"
+        placeholder="Ex: NF 45892 - Fornecedor Gerdau, Lote 2026-A"
+        class="w-full"
+      />
+    </div>
+
+    <!-- Rodapé de Ações -->
+    <div class="dialog-footer-actions">
+      <p-button
+        type="button"
+        label="Cancelar"
+        styleClass="p-button-secondary"
+        (onClick)="handleClose()"
+      ></p-button>
+
+      <p-button
+        type="submit"
+        [label]="form.get('transactionType')?.value === TransactionType.INFLOW ? 'Confirmar Entrada' : 'Confirmar Saída'"
+        [icon]="submitting() ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+        [styleClass]="form.get('transactionType')?.value === TransactionType.INFLOW ? 'p-button-success' : 'p-button-danger'"
+        [disabled]="form.invalid || submitting()"
+      ></p-button>
+    </div>
+  </form>
+</p-dialog>

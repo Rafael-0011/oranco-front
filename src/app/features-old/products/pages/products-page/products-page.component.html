@@ -1,0 +1,30 @@
+<div class="products-page-wrapper">
+  <p-toast position="top-right"></p-toast>
+
+  <header class="page-header">
+    <div class="header-titles">
+      <span class="badge-tag">Catálogo Central</span>
+      <h1 class="page-title">Gestão de Produtos</h1>
+      <p class="page-desc">
+        Cadastre e mantenha as informações técnicas, códigos de barras e unidades de medida para toda a cadeia logística.
+      </p>
+    </div>
+  </header>
+
+  <app-product-table
+    [products]="products()"
+    [loading]="loading()"
+    (refresh)="loadProducts()"
+    (openNewProduct)="onOpenNew()"
+    (editProduct)="onEditProduct($event)"
+    (deleteProduct)="onDeleteProduct($event)"
+  ></app-product-table>
+
+  <app-product-dialog
+    [(visible)]="dialogVisible"
+    [editingProduct]="currentProduct()"
+    [submitting]="saving()"
+    (saveProduct)="handleSaveProduct($event)"
+  ></app-product-dialog>
+</div>
+

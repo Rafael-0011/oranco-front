@@ -1,0 +1,30 @@
+<div class="transactions-page-wrapper">
+  <p-toast position="top-right"></p-toast>
+
+  <header class="page-header">
+    <div class="header-titles">
+      <span class="badge-tag">Auditoria & Movimentações</span>
+      <h1 class="page-title">Histórico de Transações & CMV</h1>
+      <p class="page-desc">
+        Acompanhe todas as entradas e saídas de estoque com apuração contábil automática do Custo das Mercadorias Vendidas (CMV).
+      </p>
+    </div>
+  </header>
+
+  <app-transaction-table
+    [transactions]="transactions()"
+    [products]="products()"
+    [loading]="loading()"
+    (refresh)="loadData()"
+    (openNewTransaction)="transactionDialogVisible.set(true)"
+  ></app-transaction-table>
+
+  <app-transaction-dialog
+    [(visible)]="transactionDialogVisible"
+    [products]="products()"
+    [inventoryItems]="inventoryItems()"
+    [submitting]="savingTransaction()"
+    (saveTransaction)="handleSaveTransaction($event)"
+  ></app-transaction-dialog>
+</div>
+

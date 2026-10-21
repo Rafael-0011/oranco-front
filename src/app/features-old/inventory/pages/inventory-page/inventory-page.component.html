@@ -1,0 +1,38 @@
+<div class="inventory-page-wrapper">
+  <!-- Toast para Notificações de Sucesso/Erro -->
+  <p-toast position="top-right"></p-toast>
+
+  <!-- Cabeçalho da Página -->
+  <header class="page-header">
+    <div class="header-titles">
+      <span class="badge-tag">Módulo Logístico</span>
+      <h1 class="page-title">Gestão de Inventário & CMV</h1>
+      <p class="page-desc">
+        Controle em tempo real de estoque, apuração do custo médio ponderado e movimentações com cálculo de CMV.
+      </p>
+    </div>
+  </header>
+
+  <!-- Indicadores de Resumo (KPI Cards PrimeNG) -->
+  <app-inventory-kpi [summary]="summary()"></app-inventory-kpi>
+
+  <!-- Tabela Principal com p-table PrimeNG -->
+  <app-inventory-table
+    [items]="inventoryViewList()"
+    [loading]="loading()"
+    (refresh)="loadData()"
+    (openTransaction)="onOpenTransaction($event)"
+  ></app-inventory-table>
+
+  <!-- Dialog de Movimentação (Entrada/Saída) -->
+  <app-transaction-dialog
+    [(visible)]="transactionDialogVisible"
+    [products]="productsList()"
+    [inventoryItems]="inventoryViewList()"
+    [initialProductId]="selectedProductId()"
+    [initialType]="selectedTransactionType()"
+    [submitting]="savingTransaction()"
+    (saveTransaction)="handleSaveTransaction($event)"
+  ></app-transaction-dialog>
+</div>
+

@@ -1,0 +1,106 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="true"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [closeOnEscape]="true"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  styleClass="logistic-modal"
+  (onHide)="handleClose()"
+>
+  <!-- Cabeçalho Estilizado com Ícone -->
+  <ng-template #header>
+    <div class="dialog-header-custom">
+      <div class="dialog-icon-circle icon-product">
+        <i class="pi pi-box"></i>
+      </div>
+      <div class="dialog-header-text">
+        <h3 class="dialog-header-title">
+          {{ editingProduct() ? 'Editar Produto' : 'Cadastrar Novo Produto' }}
+        </h3>
+        <span class="dialog-header-sub">Especificações técnicas, SKU/código de barras e unidade</span>
+      </div>
+    </div>
+  </ng-template>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="product-form">
+    <!-- Nome do Produto -->
+    <div class="form-group">
+      <label for="name" class="form-label">Nome do Produto *</label>
+      <input
+        pInputText
+        id="name"
+        type="text"
+        formControlName="name"
+        placeholder="Ex: Parafuso Sextavado 3/8 x 2&quot;"
+        class="w-full"
+      />
+      @if (form.get('name')?.touched && form.get('name')?.invalid) {
+        <small class="error-text">O nome do produto é obrigatório (mínimo 2 caracteres).</small>
+      }
+    </div>
+
+    <!-- Código de Barras (EAN / SKU) -->
+    <div class="form-group">
+      <label for="barcode" class="form-label">Código de Barras (EAN / SKU)</label>
+      <input
+        pInputText
+        id="barcode"
+        type="text"
+        formControlName="barcode"
+        placeholder="Ex: 7891234567890"
+        class="w-full"
+      />
+    </div>
+
+    <!-- Unidade de Medida (p-select com appendTo="body" para não quebrar z-index) -->
+    <div class="form-group">
+      <label for="unitOfMeasure" class="form-label">Unidade de Medida *</label>
+      <p-select
+        id="unitOfMeasure"
+        formControlName="unitOfMeasure"
+        [options]="unitOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecione a unidade..."
+        appendTo="body"
+        styleClass="w-full"
+      ></p-select>
+      @if (form.get('unitOfMeasure')?.touched && form.get('unitOfMeasure')?.invalid) {
+        <small class="error-text">Selecione uma unidade de medida válida.</small>
+      }
+    </div>
+
+    <!-- Descrição / Detalhes -->
+    <div class="form-group">
+      <label for="description" class="form-label">Descrição / Especificações Técnicas</label>
+      <input
+        pInputText
+        id="description"
+        type="text"
+        formControlName="description"
+        placeholder="Ex: Aço carbono zincado para fixação pesada"
+        class="w-full"
+      />
+    </div>
+
+    <!-- Rodapé de Ações -->
+    <div class="dialog-footer-actions">
+      <p-button
+        type="button"
+        label="Cancelar"
+        styleClass="p-button-secondary"
+        (onClick)="handleClose()"
+      ></p-button>
+
+      <p-button
+        type="submit"
+        [label]="editingProduct() ? 'Atualizar Produto' : 'Salvar Produto'"
+        icon="pi pi-check"
+        styleClass="p-button-primary"
+        [disabled]="form.invalid || submitting()"
+      ></p-button>
+    </div>
+  </form>
+</p-dialog>
