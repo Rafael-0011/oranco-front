@@ -1,0 +1,100 @@
+<p-table
+  #dt
+  [value]="data()"
+  [dataKey]="dataKey()"
+  [loading]="loading()"
+  [paginator]="paginator()"
+  [rows]="rows()"
+  [rowsPerPageOptions]="rowsPerPageOptions()"
+  [showCurrentPageReport]="paginator()"
+  [currentPageReportTemplate]="reportTemplate()"
+  [globalFilterFields]="filterFields()"
+  styleClass="p-datatable-striped"
+>
+  <ng-template #caption>
+    <div class="table-header">
+      <div class="header-left">
+        @if (title()) { <h3 class="table-title">{{ title() }}</h3> }
+        @if (subtitle()) { <span class="table-subtitle">{{ subtitle() }}</span> }
+      </div>
+
+      <div class="header-actions">
+        @if (searchable()) {
+          <app-search-box [placeholder]="searchPlaceholder()" (search)="onSearch($event)" />
+        }
+        <!-- Botões extras do cabeçalho: <app-button tableActions ... /> -->
+        <ng-content select="[tableActions]" />
+        @if (showRefresh()) {
+          <app-button
+            icon="pi pi-refresh" variant="secondary" tooltip="Atualizar"
+            [loading]="loading()" (clicked)="refresh.emit()"
+          />
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      @for (col of columns(); track col.field) {
+        @if (col.sortable !== false) {
+          <th [pSortableColumn]="col.field" [style.width]="col.width" [style.text-align]="col.align ?? 'left'">
+            {{ col.header }} <p-sort-icon [field]="col.field" />
+          </th>
+        } @else {
+          <th [style.width]="col.width" [style.text-align]="col.align ?? 'left'">{{ col.header }}</th>
+        }
+      }
+      @if (rowActions()) {
+        <th style="width: 7.5rem; text-align: center">Ações</th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-row>
+    <tr (click)="rowClick.emit(row)">
+      @for (col of columns(); track col.field) {
+        @let value = valueOf(row, col.field);
+        <td
+          [style.text-align]="col.align ?? 'left'"
+          [class.cell-bold]="col.bold"
+          [class.cell-muted]="col.muted"
+          [class.cell-mono]="col.mono"
+        >
+          @if (cellMap().get(col.field); as tpl) {
+            <ng-container
+              [ngTemplateOutlet]="tpl"
+              [ngTemplateOutletContext]="{ $implicit: row, value: value, column: col }"
+            />
+          } @else if (isEmpty(value)) {
+            {{ col.fallback ?? '—' }}
+          } @else {
+            @switch (col.type) {
+              @case ('number') { {{ col.prefix }}{{ value | number: (col.format ?? '1.0-2') }} }
+              @case ('currency') { {{ value | currency: (col.currency ?? 'BRL') : 'symbol' : (col.format ?? '1.2-2') }} }
+              @case ('date') { {{ value | date: (col.format ?? 'dd/MM/yyyy HH:mm') }} }
+              @default { {{ col.prefix }}{{ value }} }
+            }
+          }
+        </td>
+      }
+      @if (rowActions(); as actions) {
+        <td style="text-align: center" (click)="$event.stopPropagation()">
+          <div class="row-actions">
+            <ng-container [ngTemplateOutlet]="actions.template" [ngTemplateOutletContext]="{ $implicit: row }" />
+          </div>
+        </td>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td [attr.colspan]="totalColumns()">
+        <app-empty-state [icon]="emptyIcon()" [title]="emptyTitle()" [subtitle]="emptySubtitle()">
+          <ng-content select="[tableEmpty]" />
+        </app-empty-state>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

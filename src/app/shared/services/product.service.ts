@@ -1,12 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Service, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env';
 import { ProductDTO } from '../../core/dtos/product.dto';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class ProductService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/products`;
