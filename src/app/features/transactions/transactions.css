@@ -1,0 +1,81 @@
+.transactions-page-wrapper {
+  padding: 1.75rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 1.75rem;
+}
+
+.badge-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-blue, #3b82f6);
+  background: #eff6ff;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid #dbeafe;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--primary-deep, #0f172a);
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.025em;
+}
+
+.page-desc {
+  font-size: 0.9375rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+  max-width: 48rem;
+  line-height: 1.5;
+}
+
+.text-red {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+/* ========================================================
+   Badges de Tipo de Movimentação (Features Old Style)
+   ======================================================== */
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.25;
+}
+
+.type-badge i {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.badge-inflow {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-outflow {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+
+
+

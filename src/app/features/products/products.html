@@ -1,1 +1,126 @@
-<p>products works!</p>
+<div class="products-page-wrapper">
+  <!-- Cabeçalho da Página -->
+  <header class="page-header">
+    <div class="header-titles">
+      <span class="badge-tag">Catálogo Central</span>
+      <h1 class="page-title">Gestão de Produtos</h1>
+      <p class="page-desc">
+        Cadastre e mantenha as informações técnicas, códigos de barras e unidades de medida para toda a cadeia logística.
+      </p>
+    </div>
+  </header>
+
+  <!-- Tabela de Produtos (Shared DataTable) -->
+  <app-data-table
+    [data]="products()"
+    [columns]="columns"
+    [loading]="loading()"
+    dataKey="id"
+    title="Catálogo de Produtos"
+    subtitle="Cadastro de itens, unidades de medida e códigos de barras (EAN/SKU)"
+    searchPlaceholder="Buscar por nome, código ou unidade..."
+    emptyTitle="Nenhum produto cadastrado"
+    emptySubtitle="Clique no botão abaixo para adicionar o primeiro item ao catálogo."
+    (refresh)="loadProducts()"
+  >
+    <!-- Botão de Ação do Cabeçalho -->
+    <app-button
+      tableActions
+      label="Novo Produto"
+      icon="pi pi-plus"
+      variant="primary"
+      (clicked)="onOpenNew()"
+    />
+
+    <!-- Célula Customizada: Unidade de Medida -->
+    <ng-template appCell="unitOfMeasure" let-row let-value="value">
+      <span class="uom-pill">{{ value || '-' }}</span>
+    </ng-template>
+
+    <!-- Ações por Linha: Editar e Excluir -->
+    <ng-template appRowActions let-row>
+      <app-button
+        icon="pi pi-pencil"
+        variant="secondary"
+        appearance="text"
+        tooltip="Editar Produto"
+        (clicked)="onEditProduct(row)"
+      />
+      <app-button
+        icon="pi pi-trash"
+        variant="danger"
+        appearance="text"
+        tooltip="Excluir Produto"
+        (clicked)="onDeleteProduct(row)"
+      />
+    </ng-template>
+  </app-data-table>
+
+  <!-- Modal de Edição / Criação usando o componente genérico app-dialog -->
+  <app-dialog
+    [(visible)]="dialogVisible"
+    [title]="currentProduct() ? 'Editar Produto' : 'Cadastrar Novo Produto'"
+    subtitle="Especificações técnicas, SKU/código de barras e unidade"
+    icon="pi-box"
+    width="32rem"
+  >
+    <form [formGroup]="productForm" (ngSubmit)="onSaveProduct()" class="product-form">
+      <app-input
+        label="Nome do Produto"
+        formControlName="name"
+        placeholder="Ex: Parafuso Sextavado 3/8 x 2''"
+        [required]="true"
+      />
+
+      <app-input
+        label="Código de Barras (EAN / SKU)"
+        formControlName="barcode"
+        placeholder="Ex: 7891234567890"
+      />
+
+      <app-select
+        label="Unidade de Medida"
+        formControlName="unitOfMeasure"
+        [options]="unitOptions"
+        placeholder="Selecione a unidade..."
+        [required]="true"
+      />
+
+      <app-input
+        label="Descrição / Especificações Técnicas"
+        formControlName="description"
+        placeholder="Ex: Aço carbono zincado para fixação pesada"
+      />
+
+      <div dialogFooter class="dialog-actions">
+        <app-button
+          type="button"
+          label="Cancelar"
+          variant="secondary"
+          appearance="outlined"
+          [disabled]="saving()"
+          (clicked)="dialogVisible.set(false)"
+        />
+        <app-button
+          type="submit"
+          [label]="currentProduct() ? 'Atualizar Produto' : 'Salvar Produto'"
+          icon="pi pi-check"
+          variant="primary"
+          [loading]="saving()"
+          [disabled]="productForm.invalid || saving()"
+        />
+      </div>
+    </form>
+  </app-dialog>
+
+  <!-- Modal de Confirmação de Exclusão usando app-confirm-dialog -->
+  <app-confirm-dialog
+    [(visible)]="confirmDeleteVisible"
+    title="Excluir Produto?"
+    [message]="deleteMessage()"
+    tone="danger"
+    confirmLabel="Excluir"
+    [loading]="deleting()"
+    (confirmed)="confirmDelete()"
+  />
+</div>

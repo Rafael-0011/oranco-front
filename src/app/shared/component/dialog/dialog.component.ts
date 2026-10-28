@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 
 /**
@@ -26,10 +26,14 @@ import { DialogModule } from 'primeng/dialog';
     >
       <ng-template #header>
         <div class="head">
-          @if (icon()) { <div class="head-icon"><i [class]="'pi ' + icon()"></i></div> }
+          @if (iconClass(); as ic) {
+            <div class="head-icon"><i [class]="ic"></i></div>
+          }
           <div class="head-text">
             <h3 class="head-title">{{ title() }}</h3>
-            @if (subtitle()) { <span class="head-sub">{{ subtitle() }}</span> }
+            @if (subtitle()) {
+              <span class="head-sub">{{ subtitle() }}</span>
+            }
           </div>
         </div>
       </ng-template>
@@ -42,12 +46,39 @@ import { DialogModule } from 'primeng/dialog';
     </p-dialog>
   `,
   styles: `
-    .head { display: flex; align-items: center; gap: .75rem; }
-    .head-icon { width: 2.5rem; height: 2.5rem; border-radius: .75rem; display: grid; place-items: center;
-      background: #dbeafe; color: #1d4ed8; }
-    .head-title { margin: 0; font-size: 1.05rem; font-weight: 700; }
-    .head-sub { font-size: .8125rem; color: var(--text-color-secondary, #64748b); }
-    .footer { display: flex; justify-content: flex-end; gap: .5rem; }
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .head-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.5rem;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 1rem;
+    }
+    .head-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+    .head-sub {
+      font-size: 0.8125rem;
+      color: #94a3b8;
+      display: block;
+      margin-top: 0.1rem;
+    }
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
   `,
 })
 export class DialogComponent {
@@ -59,4 +90,10 @@ export class DialogComponent {
   readonly draggable = input<boolean>(false);
   readonly dismissable = input<boolean>(true);
   readonly closed = output<void>();
+
+  protected readonly iconClass = computed(() => {
+    const ic = this.icon();
+    if (!ic) return '';
+    return ic.startsWith('pi ') ? ic : `pi ${ic}`;
+  });
 }

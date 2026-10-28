@@ -1,1 +1,226 @@
-<p>transactions works!</p>
+<div class="transactions-page-wrapper">
+  <!-- Cabeçalho da Página -->
+  <header class="page-header">
+    <div class="header-titles">
+      <span class="badge-tag">Auditoria & Movimentações</span>
+      <h1 class="page-title">Histórico de Transações & CMV</h1>
+      <p class="page-desc">
+        Acompanhe todas as entradas e saídas de estoque com apuração contábil automática do Custo das Mercadorias Vendidas (CMV).
+      </p>
+    </div>
+  </header>
+
+  <!-- Tabela de Transações (Shared DataTable) -->
+  <app-data-table
+    [data]="transactions()"
+    [columns]="columns"
+    [loading]="loading()"
+    dataKey="id"
+    title="Histórico de Movimentações"
+    subtitle="Auditoria de fluxos de entrada, saída e apuração contábil de CMV"
+    searchPlaceholder="Buscar transação, produto ou nota..."
+    emptyTitle="Nenhuma movimentação registrada"
+    emptySubtitle="Os lançamentos de entrada e saída efetuados aparecerão neste histórico com apuração contábil."
+    (refresh)="loadData()"
+  >
+    <!-- Botão de Ação do Cabeçalho -->
+    <app-button
+      tableActions
+      label="Nova Movimentação"
+      icon="pi pi-plus"
+      variant="primary"
+      (clicked)="onOpenTransaction()"
+    />
+
+    <!-- Célula Customizada: Tipo de Transação (Estilo Features Old) -->
+    <ng-template appCell="transactionType" let-row let-value="value">
+      <span
+        class="type-badge"
+        [class.badge-inflow]="value === 'INFLOW'"
+        [class.badge-outflow]="value === 'OUTFLOW'"
+      >
+        <i [class]="value === 'INFLOW' ? 'pi pi-arrow-down-left' : 'pi pi-arrow-up-right'"></i>
+        {{ value === 'INFLOW' ? 'Entrada' : 'Saída' }}
+      </span>
+    </ng-template>
+
+    <!-- Célula Customizada: CMV -->
+    <ng-template appCell="cmv" let-row let-value="value">
+      <span [class.text-red]="value != null && value > 0">
+        {{ value ? (value | currency: 'BRL' : 'symbol' : '1.2-2') : '—' }}
+      </span>
+    </ng-template>
+  </app-data-table>
+
+  <!-- Modal de Movimentação usando app-dialog reutilizável -->
+  <app-dialog
+    [(visible)]="transactionDialogVisible"
+    title="Nova Movimentação de Estoque"
+    subtitle="Entrada, saída e apuração contábil em tempo real"
+    [icon]="isEntry() ? 'pi-arrow-down-left' : 'pi-arrow-up-right'"
+    width="34rem"
+  >
+    <form [formGroup]="transactionForm" (ngSubmit)="onSaveTransaction()" class="transaction-form">
+      <!-- Tipo de Movimentação (Inflow / Outflow) -->
+      <div class="form-field-group">
+        <label class="field-label">Tipo de Movimentação *</label>
+        <div class="type-selector">
+          <button
+            type="button"
+            class="type-btn"
+            [class.active-inflow]="isEntry()"
+            (click)="setTransactionType(TransactionType.INFLOW)"
+          >
+            <i class="pi pi-arrow-down-left"></i>
+            <span>Entrada (Inflow)</span>
+          </button>
+
+          <button
+            type="button"
+            class="type-btn"
+            [class.active-outflow]="!isEntry()"
+            (click)="setTransactionType(TransactionType.OUTFLOW)"
+          >
+            <i class="pi pi-arrow-up-right"></i>
+            <span>Saída (Outflow)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seleção de Produto -->
+      <app-select
+        label="Produto"
+        formControlName="productId"
+        [options]="productSelectOptions()"
+        placeholder="Selecione um produto do estoque..."
+        [filter]="true"
+        [required]="true"
+      />
+
+      @if (selectedInventoryItem(); as item) {
+        <div class="product-stock-banner">
+          <span class="stock-info">
+            Estoque atual: <strong>{{ item.currentQuantity | number: '1.0-3' }} {{ item.unitOfMeasure }}</strong>
+          </span>
+          <span class="stock-info">
+            Custo Médio: <strong>{{ item.currentAverageCost | currency: 'BRL' : 'symbol' : '1.2-2' }}</strong>
+          </span>
+        </div>
+      }
+
+      <!-- Grid: Quantidade e Custo Unitário -->
+      <div class="form-row">
+        <div class="col-half">
+          <div class="qty-field-container">
+            <div class="qty-label-bar">
+              <label class="field-label">Quantidade <span class="req">*</span></label>
+              @if (selectedInventoryItem(); as item) {
+                <button
+                  type="button"
+                  class="btn-fill-total"
+                  [disabled]="item.currentQuantity <= 0"
+                  (click)="fillTotalQuantity()"
+                  [title]="'Preencher com todo o estoque (' + item.currentQuantity + ') para zerar'"
+                >
+                  <i class="pi pi-bolt"></i>
+                  <span>Zerar ({{ item.currentQuantity | number: '1.0-3' }})</span>
+                </button>
+              }
+            </div>
+            <div class="qty-input-group">
+              <app-input
+                type="number"
+                formControlName="quantity"
+                placeholder="Ex: 50"
+                [required]="true"
+                class="flex-1"
+              />
+              @if (selectedInventoryItem(); as item) {
+                <button
+                  type="button"
+                  class="btn-fill-side"
+                  [disabled]="item.currentQuantity <= 0"
+                  (click)="fillTotalQuantity()"
+                  title="Preencher com o total em estoque"
+                >
+                  <i class="pi pi-bolt"></i>
+                  <span>Tudo</span>
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="col-half">
+          <app-input
+            [label]="isEntry() ? 'Custo Unitário (R$)' : 'Preço Ref. / Custo (R$)'"
+            type="number"
+            formControlName="unitValue"
+            placeholder="0,00"
+            [required]="true"
+          />
+        </div>
+      </div>
+
+      <!-- Resumo Contábil -->
+      <div
+        class="calc-summary-card"
+        [class.summary-inflow]="isEntry()"
+        [class.summary-outflow]="!isEntry()"
+      >
+        <div class="summary-line">
+          <span class="text-muted">Operação Contábil:</span>
+          <strong class="font-semibold">
+            {{ isEntry() ? 'Aporte de Estoque (Entrada)' : 'Baixa de Estoque (Saída)' }}
+          </strong>
+        </div>
+
+        @if (isEntry()) {
+          <div class="summary-line">
+            <span>Total Financeiro da Compra:</span>
+            <strong class="text-emerald font-bold">
+              {{ calculatedTotal() | currency: 'BRL' : 'symbol' : '1.2-2' }}
+            </strong>
+          </div>
+        } @else {
+          <div class="summary-line">
+            <span>CMV Estimado da Baixa:</span>
+            <strong class="text-red font-bold">
+              {{ calculatedCmv() | currency: 'BRL' : 'symbol' : '1.2-2' }}
+            </strong>
+          </div>
+          <div class="summary-subline">
+            Calculado com base no custo médio de
+            {{ (selectedInventoryItem()?.currentAverageCost || 0) | currency: 'BRL' : 'symbol' : '1.2-2' }}/un
+          </div>
+        }
+      </div>
+
+      <!-- Observações / NF -->
+      <app-input
+        label="Observações / NF / Motivo"
+        formControlName="notes"
+        placeholder="Ex: NF 45892 - Fornecedor Gerdau, Lote 2026-A"
+      />
+
+      <div dialogFooter class="dialog-actions">
+        <app-button
+          type="button"
+          label="Cancelar"
+          variant="secondary"
+          appearance="outlined"
+          [disabled]="savingTransaction()"
+          (clicked)="transactionDialogVisible.set(false)"
+        />
+        <app-button
+          type="submit"
+          [label]="isEntry() ? 'Confirmar Entrada' : 'Confirmar Saída'"
+          [icon]="isEntry() ? 'pi pi-arrow-down-left' : 'pi pi-arrow-up-right'"
+          [variant]="isEntry() ? 'success' : 'danger'"
+          [loading]="savingTransaction()"
+          [disabled]="transactionForm.invalid || savingTransaction()"
+        />
+      </div>
+    </form>
+  </app-dialog>
+</div>

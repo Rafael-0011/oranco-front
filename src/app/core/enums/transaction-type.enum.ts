@@ -5,3 +5,4 @@ export enum TransactionType {
 
 export type TransactionTypeType = `${TransactionType}`;
 
+export { TransactionType as TransactionTypeEnum };

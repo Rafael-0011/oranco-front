@@ -9,5 +9,5 @@ export interface InventoryTransaction {
   cmv?: number;
   transactionDate?: string | Date;
   notes?: string;
+  inventoryMinimum?: number;
 }
-
