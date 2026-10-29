@@ -9,6 +9,9 @@
   [showCurrentPageReport]="paginator()"
   [currentPageReportTemplate]="reportTemplate()"
   [globalFilterFields]="filterFields()"
+  [lazy]="lazy()"
+  [totalRecords]="lazy() ? totalRecords() : (data()?.length ?? 0)"
+  (onLazyLoad)="onTableLazyLoad($event)"
   styleClass="p-datatable-striped"
 >
   <ng-template #caption>

@@ -46,6 +46,12 @@ export class Products implements OnInit {
   readonly saving = signal<boolean>(false);
   readonly deleting = signal<boolean>(false);
 
+  readonly currentPage = signal<number>(0);
+  readonly pageSize = signal<number>(10);
+  readonly totalRecords = signal<number>(0);
+
+  private lastPageKey = '';
+
   readonly dialogVisible = signal<boolean>(false);
   readonly confirmDeleteVisible = signal<boolean>(false);
 
@@ -86,20 +92,34 @@ export class Products implements OnInit {
     this.loadProducts();
   }
 
-  loadProducts(): void {
+  loadProducts(page = this.currentPage(), size = this.pageSize(), force = false): void {
+    const key = `${page}-${size}`;
+    if (!force && this.lastPageKey === key) return;
+    this.lastPageKey = key;
+
     this.loading.set(true);
-    this.productService.findAll().subscribe({
-      next: (list) => {
-        const sanitized = (list || []).map(sanitizeProduct);
+    this.productService.findAllPage(page, size).subscribe({
+      next: (res) => {
+        const sanitized = (res.content || []).map(sanitizeProduct);
         this.products.set(sanitized);
+        this.totalRecords.set(res.totalElements ?? sanitized.length);
+        this.currentPage.set(res.page ?? page);
+        this.pageSize.set(size);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erro ao buscar produtos:', err);
-        this.notify.error('Falha ao carregar lista de produtos.');
+        console.error('Erro ao buscar produtos paginados:', err);
+        this.lastPageKey = '';
         this.loading.set(false);
+        this.notify.error('Falha ao carregar lista de produtos.');
       }
     });
+  }
+
+  onPageChange(event: { page: number; size: number }): void {
+    this.currentPage.set(event.page);
+    this.pageSize.set(event.size);
+    this.loadProducts(event.page, event.size);
   }
 
   onOpenNew(): void {
@@ -135,7 +155,7 @@ export class Products implements OnInit {
         this.confirmDeleteVisible.set(false);
         this.productToDelete.set(undefined);
         this.notify.success(`Produto "${prod.name}" excluído com sucesso!`);
-        this.loadProducts();
+        this.loadProducts(this.currentPage(), this.pageSize(), true);
       },
       error: (err) => {
         this.deleting.set(false);
@@ -173,7 +193,7 @@ export class Products implements OnInit {
           editing ? 'Produto atualizado com sucesso!' : 'Produto cadastrado com sucesso!',
           editing ? 'Atualizado' : 'Criado'
         );
-        this.loadProducts();
+        this.loadProducts(this.currentPage(), this.pageSize(), true);
       },
       error: (err) => {
         this.saving.set(false);

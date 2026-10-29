@@ -10,18 +10,22 @@
     </div>
   </header>
 
-  <!-- Tabela de Produtos (Shared DataTable) -->
+  <!-- Tabela de Produtos (Shared DataTable com paginação server-side /find-all-page) -->
   <app-data-table
     [data]="products()"
     [columns]="columns"
     [loading]="loading()"
+    [lazy]="true"
+    [totalRecords]="totalRecords()"
+    [rows]="pageSize()"
     dataKey="id"
     title="Catálogo de Produtos"
     subtitle="Cadastro de itens, unidades de medida e códigos de barras (EAN/SKU)"
     searchPlaceholder="Buscar por nome, código ou unidade..."
     emptyTitle="Nenhum produto cadastrado"
     emptySubtitle="Clique no botão abaixo para adicionar o primeiro item ao catálogo."
-    (refresh)="loadProducts()"
+    (pageChange)="onPageChange($event)"
+    (refresh)="loadProducts(currentPage(), pageSize(), true)"
   >
     <!-- Botão de Ação do Cabeçalho -->
     <app-button

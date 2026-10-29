@@ -38,6 +38,8 @@ export class DataTableComponent<T extends object = any> {
   readonly rows = input<number>(10);
   readonly rowsPerPageOptions = input<number[]>([5, 10, 20, 50]);
   readonly reportTemplate = input<string>('Mostrando {first} a {last} de {totalRecords} registros');
+  readonly lazy = input<boolean>(false);
+  readonly totalRecords = input<number>(0);
 
   // estado vazio
   readonly emptyIcon = input<string>('pi-inbox');
@@ -47,6 +49,7 @@ export class DataTableComponent<T extends object = any> {
   // eventos
   readonly refresh = output<void>();
   readonly rowClick = output<T>();
+  readonly pageChange = output<{ page: number; size: number }>();
 
   // templates customizados
   private readonly cellTemplates = contentChildren(CellTemplateDirective);
@@ -74,6 +77,14 @@ export class DataTableComponent<T extends object = any> {
 
   protected onSearch(text: string): void {
     this.table()?.filterGlobal(text, 'contains');
+  }
+
+  protected onTableLazyLoad(event: any): void {
+    if (!this.lazy()) return;
+    const first = event.first ?? 0;
+    const rows = event.rows ?? this.rows();
+    const page = Math.floor(first / rows);
+    this.pageChange.emit({ page, size: rows });
   }
 
   /** Limpa filtros e ordenação. */

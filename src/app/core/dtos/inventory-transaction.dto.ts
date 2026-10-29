@@ -1,4 +1,5 @@
 import { TransactionType, TransactionTypeType, TransactionTypeEnum } from '../enums/transaction-type.enum';
+import { UnitOfMeasure, UnitOfMeasureType, UnitOfMeasureEnum } from '../enums/unit-of-measure.enum';
 
 export interface InventoryTransactionReqDTO {
   id?: number;
@@ -12,6 +13,8 @@ export interface InventoryTransactionReqDTO {
 export interface InventoryTransactionResDTO {
   id?: number;
   productId?: number;
+  name?: string;
+  unitOfMeasure?: UnitOfMeasure | UnitOfMeasureType | UnitOfMeasureEnum;
   transactionType?: TransactionType | TransactionTypeType | TransactionTypeEnum;
   quantity?: number;
   unitValue?: number;

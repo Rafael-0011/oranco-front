@@ -16,8 +16,9 @@ import {
   InventoryItemView,
   InventorySummary,
   TransactionType,
-  StatusInventory,
-  sanitizeProduct
+  toInventoryItemViewList,
+  calculateInventorySummary,
+  toProductViewList
 } from '@core';
 import {
   ProductService,
@@ -78,6 +79,12 @@ export class Inventory implements OnInit {
   readonly productsList = signal<ProductDTO[]>([]);
   readonly inventoryList = signal<InventoryResDTO[]>([]);
   readonly inventoryViewList = signal<InventoryItemView[]>([]);
+
+  readonly currentPage = signal<number>(0);
+  readonly pageSize = signal<number>(10);
+  readonly totalRecords = signal<number>(0);
+
+  private lastPageKey = '';
 
   readonly summary = signal<InventorySummary>({
     totalStockValue: 0,
@@ -153,89 +160,50 @@ export class Inventory implements OnInit {
     this.loadData();
   }
 
-  loadData(): void {
-    this.loading.set(true);
+  loadData(page = this.currentPage(), size = this.pageSize(), force = false): void {
+    const key = `${page}-${size}`;
+    if (!force && this.lastPageKey === key) return;
+    this.lastPageKey = key;
 
-    forkJoin({
-      products: this.productService.findAll(),
-      inventory: this.inventoryService.findAll()
-    }).subscribe({
-      next: ({ products, inventory }) => {
-        const sanitized = (products || []).map(sanitizeProduct);
-        this.productsList.set(sanitized);
-        this.inventoryList.set(inventory || []);
-        this.consolidateInventoryView();
-        this.computeSummary();
+    this.loading.set(true);
+    this.inventoryService.findAllPage(page, size).subscribe({
+      next: (res) => {
+        const items = res.content || [];
+        this.totalRecords.set(res.totalElements ?? items.length);
+        this.currentPage.set(res.page ?? page);
+        this.pageSize.set(size);
+
+        // O endpoint /inventory/find-all-page já traz name, barcode, unitOfMeasure, statusInventory etc.
+        const views = toInventoryItemViewList(items);
+        this.inventoryViewList.set(views);
+        this.summary.set(calculateInventorySummary(views));
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erro ao carregar dados do inventário:', err);
-        this.notify.error('Não foi possível carregar os dados de produtos e inventário.');
+        console.error('Erro ao carregar dados do inventário paginado:', err);
+        this.lastPageKey = '';
         this.loading.set(false);
+        this.notify.error('Não foi possível carregar os dados de inventário.');
       }
     });
   }
 
-  private consolidateInventoryView(): void {
-    const inventoryMap = new Map<number, InventoryResDTO>();
-    for (const inv of this.inventoryList()) {
-      if (inv.productId != null) {
-        inventoryMap.set(inv.productId, inv);
-      }
-    }
-
-    const views: InventoryItemView[] = this.productsList().map((p) => {
-      const inv = p.id != null ? inventoryMap.get(p.id) : undefined;
-      const qty = inv?.currentQuantity ?? 0;
-      const cost = inv?.currentAverageCost ?? 0;
-      const total = qty * cost;
-
-      return {
-        id: inv?.id,
-        productId: p.id!,
-        productName: p.name || 'Produto sem nome',
-        barcode: p.barcode,
-        description: p.description,
-        unitOfMeasure: p.unitOfMeasure,
-        currentQuantity: qty,
-        currentAverageCost: cost,
-        inventoryMinimum: inv?.inventoryMinimum,
-        statusInventory: inv?.statusInventory ?? (qty <= 0 ? StatusInventory.CRITICAL : StatusInventory.NORMAL),
-        totalValue: total,
-        updatedAt: inv?.updatedAt
-      };
-    });
-
-    this.inventoryViewList.set(views);
-  }
-
-  private computeSummary(): void {
-    let totalValue = 0;
-    let totalQty = 0;
-    let distinctWithStock = 0;
-    let criticalCount = 0;
-
-    for (const item of this.inventoryViewList()) {
-      totalValue += item.totalValue;
-      totalQty += item.currentQuantity;
-      if (item.currentQuantity > 0) {
-        distinctWithStock++;
-      }
-      if (item.statusInventory === StatusInventory.CRITICAL) {
-        criticalCount++;
-      }
-    }
-
-    this.summary.set({
-      totalStockValue: totalValue,
-      totalItemsCount: totalQty,
-      distinctProductsCount: distinctWithStock,
-      weightedAverageCost: totalQty > 0 ? totalValue / totalQty : 0,
-      criticalItemsCount: criticalCount
-    });
+  onPageChange(event: { page: number; size: number }): void {
+    this.currentPage.set(event.page);
+    this.pageSize.set(event.size);
+    this.loadData(event.page, event.size);
   }
 
   onOpenTransaction(event: { productId?: number; type?: TransactionType } = {}): void {
+    // Carrega produtos sob demanda exclusivamente para o select do modal (apenas se ainda não carregou)
+    if (this.productsList().length === 0) {
+      this.productService.findAll().subscribe({
+        next: (prods) => {
+          this.productsList.set(toProductViewList(prods || []));
+        }
+      });
+    }
+
     const type = event.type || TransactionType.INFLOW;
     const prodId = event.productId ?? null;
 
@@ -276,7 +244,8 @@ export class Inventory implements OnInit {
   fillTotalQuantity(): void {
     const item = this.selectedInventoryItem();
     if (item && item.currentQuantity > 0) {
-      this.transactionForm.patchValue({ quantity: item.currentQuantity });
+      const qty = Math.round(item.currentQuantity * 1000) / 1000;
+      this.transactionForm.patchValue({ quantity: qty });
       this.transactionForm.get('quantity')?.markAsDirty();
       this.transactionForm.get('quantity')?.markAsTouched();
     }
@@ -314,7 +283,7 @@ export class Inventory implements OnInit {
           isEntry ? 'Entrada Registrada' : 'Saída Registrada'
         );
 
-        this.loadData();
+        this.loadData(this.currentPage(), this.pageSize(), true);
       },
       error: (err) => {
         this.savingTransaction.set(false);

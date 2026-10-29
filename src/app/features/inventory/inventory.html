@@ -46,18 +46,22 @@
     />
   </section>
 
-  <!-- Tabela de Inventário (Shared DataTable) -->
+  <!-- Tabela de Inventário (Shared DataTable com paginação server-side /find-all-page) -->
   <app-data-table
     [data]="inventoryViewList()"
     [columns]="columns"
     [loading]="loading()"
+    [lazy]="true"
+    [totalRecords]="totalRecords()"
+    [rows]="pageSize()"
     dataKey="productId"
     title="Inventário de Estoque"
     subtitle="Visão consolidada de produtos, saldo físico, custo médio e patrimônio"
     searchPlaceholder="Buscar por produto, código ou unidade..."
     emptyTitle="Nenhum item em estoque encontrado"
     emptySubtitle="Cadastre novos produtos para começar a gerenciar o inventário e movimentações."
-    (refresh)="loadData()"
+    (pageChange)="onPageChange($event)"
+    (refresh)="loadData(currentPage(), pageSize(), true)"
   >
     <!-- Botão de Ação do Cabeçalho -->
     <app-button
@@ -187,18 +191,6 @@
           <div class="qty-field-container">
             <div class="qty-label-bar">
               <label class="field-label">Quantidade <span class="req">*</span></label>
-              @if (selectedInventoryItem(); as item) {
-                <button
-                  type="button"
-                  class="btn-fill-total"
-                  [disabled]="item.currentQuantity <= 0"
-                  (click)="fillTotalQuantity()"
-                  [title]="'Preencher com todo o estoque (' + item.currentQuantity + ') para zerar'"
-                >
-                  <i class="pi pi-bolt"></i>
-                  <span>Zerar ({{ item.currentQuantity | number: '1.0-3' }})</span>
-                </button>
-              }
             </div>
             <div class="qty-input-group">
               <app-input
@@ -206,6 +198,9 @@
                 formControlName="quantity"
                 placeholder="Ex: 50"
                 [required]="true"
+                [min]="0.001"
+                [minFractionDigits]="0"
+                [maxFractionDigits]="3"
                 class="flex-1"
               />
               @if (selectedInventoryItem(); as item) {
@@ -214,10 +209,10 @@
                   class="btn-fill-side"
                   [disabled]="item.currentQuantity <= 0"
                   (click)="fillTotalQuantity()"
-                  title="Preencher com o total em estoque"
+                  [title]="'Preencher com todo o estoque (' + (item.currentQuantity | number: '1.0-3') + ') '"
                 >
                   <i class="pi pi-bolt"></i>
-                  <span>Tudo</span>
+                  <span>Zerar</span>
                 </button>
               }
             </div>
@@ -231,6 +226,9 @@
             formControlName="unitValue"
             placeholder="0,00"
             [required]="true"
+            [min]="0.001"
+            [minFractionDigits]="2"
+            [maxFractionDigits]="2"
           />
         </div>
       </div>

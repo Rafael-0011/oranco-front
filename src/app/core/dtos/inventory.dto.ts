@@ -1,4 +1,5 @@
 import { StatusInventory, StatusInventoryType } from '../enums/status-inventory.enum';
+import { UnitOfMeasure, UnitOfMeasureType, UnitOfMeasureEnum } from '../enums/unit-of-measure.enum';
 
 export interface InventoryReqDTO {
   id?: number;
@@ -11,6 +12,9 @@ export interface InventoryReqDTO {
 export interface InventoryResDTO {
   id?: number;
   productId?: number;
+  name?: string;
+  barcode?: string;
+  unitOfMeasure?: UnitOfMeasure | UnitOfMeasureType | UnitOfMeasureEnum;
   currentQuantity?: number;
   currentAverageCost?: number;
   inventoryMinimum?: number;

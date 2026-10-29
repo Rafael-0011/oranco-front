@@ -8,15 +8,15 @@ import {
 } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
 import {
   ProductDTO,
-  InventoryResDTO,
-  InventoryTransactionResDTO,
   InventoryTransactionReqDTO,
   InventoryItemView,
   TransactionType,
-  sanitizeProduct
+  EnrichedTransaction,
+  toEnrichedTransactionList,
+  toInventoryItemViewList,
+  toProductViewList
 } from '@core';
 import {
   ProductService,
@@ -32,10 +32,6 @@ import {
   SelectOption,
   NotificationService
 } from '@shared';
-
-export interface EnrichedTransaction extends InventoryTransactionResDTO {
-  productName?: string;
-}
 
 @Component({
   selector: 'app-transactions',
@@ -72,6 +68,12 @@ export class Transactions implements OnInit {
   readonly loading = signal<boolean>(false);
   readonly savingTransaction = signal<boolean>(false);
   readonly transactionDialogVisible = signal<boolean>(false);
+
+  readonly currentPage = signal<number>(0);
+  readonly pageSize = signal<number>(10);
+  readonly totalRecords = signal<number>(0);
+
+  private lastPageKey = '';
 
   readonly transactionType = signal<TransactionType>(TransactionType.INFLOW);
   readonly selectedProdId = signal<number | null>(null);
@@ -141,69 +143,53 @@ export class Transactions implements OnInit {
     this.loadData();
   }
 
-  loadData(): void {
+  loadData(page = this.currentPage(), size = this.pageSize(), force = false): void {
+    const key = `${page}-${size}`;
+    if (!force && this.lastPageKey === key) return;
+    this.lastPageKey = key;
+
     this.loading.set(true);
 
-    forkJoin({
-      transactions: this.transactionService.findAll(),
-      products: this.productService.findAll(),
-      inventory: this.inventoryService.findAll()
-    }).subscribe({
-      next: ({ transactions, products, inventory }) => {
-        const prodList = (products || []).map(sanitizeProduct);
-        this.products.set(prodList);
+    this.transactionService.findAllPage(page, size).subscribe({
+      next: (res) => {
+        const items = res.content || [];
+        this.totalRecords.set(res.totalElements ?? items.length);
+        this.currentPage.set(res.page ?? page);
+        this.pageSize.set(size);
 
-        const productMap = new Map<number, ProductDTO>();
-        for (const p of prodList) {
-          if (p.id != null) productMap.set(p.id, p);
-        }
-
-        const enrichedList: EnrichedTransaction[] = (transactions || []).map((t) => {
-          const prod = t.productId != null ? productMap.get(t.productId) : undefined;
-          return {
-            ...t,
-            productName: prod?.name || `Produto #${t.productId}`
-          };
-        });
-
-        this.transactions.set(enrichedList);
-
-        const inventoryMap = new Map<number, InventoryResDTO>();
-        for (const inv of inventory || []) {
-          if (inv.productId != null) inventoryMap.set(inv.productId, inv);
-        }
-
-        const views: InventoryItemView[] = prodList.map((p) => {
-          const inv = p.id != null ? inventoryMap.get(p.id) : undefined;
-          const qty = inv?.currentQuantity ?? 0;
-          const cost = inv?.currentAverageCost ?? 0;
-          return {
-            id: inv?.id,
-            productId: p.id!,
-            productName: p.name || 'Produto sem nome',
-            barcode: p.barcode,
-            description: p.description,
-            unitOfMeasure: p.unitOfMeasure,
-            currentQuantity: qty,
-            currentAverageCost: cost,
-            inventoryMinimum: inv?.inventoryMinimum,
-            statusInventory: inv?.statusInventory,
-            totalValue: qty * cost
-          };
-        });
-
-        this.inventoryItems.set(views);
+        // O endpoint já traz os campos enriquecidos (nome, unidade, etc)
+        this.transactions.set(toEnrichedTransactionList(items, this.products()));
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Erro ao carregar movimentações:', err);
-        this.notify.error('Falha ao carregar o histórico de transações.');
+        console.error('Erro ao carregar movimentações paginadas:', err);
+        this.lastPageKey = '';
         this.loading.set(false);
+        this.notify.error('Falha ao carregar o histórico de transações.');
       }
     });
   }
 
+  onPageChange(event: { page: number; size: number }): void {
+    this.currentPage.set(event.page);
+    this.pageSize.set(event.size);
+    this.loadData(event.page, event.size);
+  }
+
   onOpenTransaction(): void {
+    // Carrega produtos e inventário sob demanda exclusivamente para o modal
+    if (this.products().length === 0) {
+      this.productService.findAll().subscribe({
+        next: (prods) => this.products.set(toProductViewList(prods || []))
+      });
+    }
+
+    if (this.inventoryItems().length === 0) {
+      this.inventoryService.findAll().subscribe({
+        next: (invs) => this.inventoryItems.set(toInventoryItemViewList(invs || []))
+      });
+    }
+
     this.transactionType.set(TransactionType.INFLOW);
     this.selectedProdId.set(null);
 
@@ -230,7 +216,8 @@ export class Transactions implements OnInit {
   fillTotalQuantity(): void {
     const item = this.selectedInventoryItem();
     if (item && item.currentQuantity > 0) {
-      this.transactionForm.patchValue({ quantity: item.currentQuantity });
+      const qty = Math.round(item.currentQuantity * 1000) / 1000;
+      this.transactionForm.patchValue({ quantity: qty });
       this.transactionForm.get('quantity')?.markAsDirty();
       this.transactionForm.get('quantity')?.markAsTouched();
     }
@@ -268,7 +255,12 @@ export class Transactions implements OnInit {
           isEntry ? 'Entrada Registrada' : 'Saída Registrada'
         );
 
-        this.loadData();
+        this.loadData(this.currentPage(), this.pageSize(), true);
+
+        // Atualiza inventário em cache para o próximo uso no modal
+        this.inventoryService.findAll().subscribe({
+          next: (invs) => this.inventoryItems.set(toInventoryItemViewList(invs || []))
+        });
       },
       error: (err) => {
         this.savingTransaction.set(false);
