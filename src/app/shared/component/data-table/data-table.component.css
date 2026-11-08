@@ -1,0 +1,11 @@
+.table-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.header-left { display: flex; flex-direction: column; gap: .125rem; min-width: 0; }
+.table-title { margin: 0; font-size: 1.125rem; font-weight: 700; }
+.table-subtitle { font-size: .8125rem; color: var(--text-color-secondary, #64748b); }
+.header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+
+.cell-bold { font-weight: 700; }
+.cell-muted { color: var(--text-color-secondary, #64748b); font-size: .875rem; }
+.cell-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8125rem; }
+
+.row-actions { display: inline-flex; gap: .25rem; }

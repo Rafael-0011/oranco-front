@@ -10,6 +10,7 @@ import { TransactionType } from '../../../../core/enums/transaction-type.enum';
 import { sanitizeProduct } from '../../../../core/utils/data-sanitizer';
 import { TransactionTableComponent } from '../../components/transaction-table/transaction-table.component';
 import { TransactionDialogComponent } from '../../components/transaction-dialog/transaction-dialog.component';
+import { ButtonComponent } from '@shared/component';
 
 @Component({
   selector: 'app-transactions-page',
@@ -18,7 +19,7 @@ import { TransactionDialogComponent } from '../../components/transaction-dialog/
     CommonModule,
     ToastModule,
     TransactionTableComponent,
-    TransactionDialogComponent
+    TransactionDialogComponent,
   ],
   templateUrl: './transactions-page.component.html',
   styleUrl: './transactions-page.component.css'

@@ -8,3 +8,4 @@ export enum UnitOfMeasure {
 
 export type UnitOfMeasureType = `${UnitOfMeasure}`;
 
+export { UnitOfMeasure as UnitOfMeasureEnum };

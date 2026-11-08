@@ -1,0 +1,151 @@
+.inventory-page-wrapper {
+  padding: 1.75rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 1.75rem;
+}
+
+.badge-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-blue, #3b82f6);
+  background: #eff6ff;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid #dbeafe;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.page-title {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: var(--primary-deep, #0f172a);
+  margin: 0 0 0.4rem 0;
+  letter-spacing: -0.025em;
+}
+
+.page-desc {
+  font-size: 0.9375rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+  max-width: 48rem;
+  line-height: 1.5;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.uom-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #eff6ff;
+  color: var(--primary-blue, #3b82f6);
+  border: 1px solid #dbeafe;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  display: inline-block;
+}
+
+.stock-qty-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.stock-number {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.text-danger {
+  color: #ef4444;
+}
+
+.text-success {
+  color: #10b981;
+}
+
+.stock-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-danger {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 2px #fee2e2;
+}
+
+.dot-success {
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px #d1fae5;
+}
+
+/* ========================================================
+   Ações Rápidas de Estoque (Entrada / Saída - Features Old)
+   ======================================================== */
+.action-buttons {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-action-btn {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: transparent;
+  font-size: 0.75rem;
+}
+
+.quick-inflow {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.quick-inflow:hover {
+  background: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+.quick-outflow {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.quick-outflow:hover:not(:disabled) {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.quick-outflow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+
+

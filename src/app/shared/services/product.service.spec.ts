@@ -47,6 +47,26 @@ describe('ProductService', () => {
     req.flush(mockProducts);
   });
 
+  it('should find paged products with default params', () => {
+    const mockPage = {
+      content: [
+        { id: 1, name: 'Produto A', barcode: '123456', unitOfMeasure: UnitOfMeasure.UN }
+      ],
+      totalElements: 1,
+      totalPages: 1,
+      page: 0,
+      size: 20
+    };
+
+    service.findAllPage().subscribe((res) => {
+      expect(res).toEqual(mockPage);
+    });
+
+    const req = httpTesting.expectOne(`${baseUrl}/find-all-page?page=0&size=20`);
+    expect(req.request.method).toBe('GET');
+    req.flush(mockPage);
+  });
+
   it('should find product by id', () => {
     const mockProduct: ProductDTO = { id: 1, name: 'Produto A', unitOfMeasure: UnitOfMeasure.UN };
 

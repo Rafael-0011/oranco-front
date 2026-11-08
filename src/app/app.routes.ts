@@ -9,25 +9,19 @@ export const routes: Routes = [
   {
     path: 'inventory',
     loadComponent: () =>
-      import('./features-old/inventory/pages/inventory-page/inventory-page.component').then(
-        (m) => m.InventoryPageComponent
-      ),
+      import('./features/inventory/inventory').then((m) => m.Inventory),
     title: 'Inventário e Estoque | Oranco'
   },
   {
     path: 'products',
     loadComponent: () =>
-      import('./features-old/products/pages/products-page/products-page.component').then(
-        (m) => m.ProductsPageComponent
-      ),
+      import('./features/products/products').then((m) => m.Products),
     title: 'Catálogo de Produtos | Oranco'
   },
   {
     path: 'transactions',
     loadComponent: () =>
-      import('./features-old/transactions/pages/transactions-page/transactions-page.component').then(
-        (m) => m.TransactionsPageComponent
-      ),
+      import('./features/transactions/transactions').then((m) => m.Transactions),
     title: 'Histórico de Transações & CMV | Oranco'
   },
   {

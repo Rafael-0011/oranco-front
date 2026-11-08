@@ -664,3 +664,213 @@ svg[data-p-icon="angle-double-right"],
   border-color: var(--error-red);
   color: #ffffff;
 }
+
+/* ========================================================
+   Formulários de Movimentação em Modais (app-dialog)
+   ======================================================== */
+.transaction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.req {
+  color: #ef4444;
+}
+
+.type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.type-btn {
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.15s ease;
+}
+
+.type-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.active-inflow {
+  background: #ecfdf5 !important;
+  border-color: #10b981 !important;
+  color: #065f46 !important;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2);
+}
+
+.active-outflow {
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.2);
+}
+
+.product-stock-banner {
+  display: flex;
+  justify-content: space-between;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: #1e3a8a;
+}
+
+.form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.col-half {
+  flex: 1;
+}
+
+.qty-field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.qty-label-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qty-input-group {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.btn-fill-total {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 6px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.btn-fill-total:hover:not(:disabled) {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.btn-fill-total:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+}
+
+.btn-fill-side {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-fill-side:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.btn-fill-side:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.calc-summary-card {
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.summary-inflow {
+  border-color: #a7f3d0;
+  background: #f0fdf4;
+}
+
+.summary-outflow {
+  border-color: #fecaca;
+  background: #fff1f2;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-subline {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+.text-emerald {
+  color: #10b981;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
