@@ -7,6 +7,7 @@ export interface ProductReqDTO {
   description?: string;
   unitOfMeasure?: UnitOfMeasure | UnitOfMeasureType | UnitOfMeasureEnum;
   createdAt?: string;
+  inventoryMinimum?: number;
 }
 
 export interface ProductResDTO {
@@ -16,6 +17,7 @@ export interface ProductResDTO {
   description?: string;
   unitOfMeasure?: UnitOfMeasure | UnitOfMeasureType | UnitOfMeasureEnum;
   createdAt?: string;
+  inventoryMinimum?: number;
 }
 
 // Aliases para manter compatibilidade com códigos existentes

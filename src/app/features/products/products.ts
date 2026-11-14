@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProductDTO, ProductReqDTO, UnitOfMeasure, UnitOfMeasureEnum, sanitizeProduct } from '@core';
+import { ProductDTO, ProductReqDTO, UnitOfMeasure, UnitOfMeasureEnum} from '@core';
 import {
   ProductService,
   DataTableComponent,
@@ -70,7 +70,8 @@ export class Products implements OnInit {
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     barcode: ['', [Validators.maxLength(50)]],
     unitOfMeasure: [UnitOfMeasureEnum.UN, [Validators.required]],
-    description: ['', [Validators.maxLength(255)]]
+    description: ['', [Validators.maxLength(255)]],
+    inventoryMinimum: [0, [Validators.min(0)]]
   });
 
   readonly deleteMessage = computed(() => {
@@ -100,9 +101,8 @@ export class Products implements OnInit {
     this.loading.set(true);
     this.productService.findAllPage(page, size).subscribe({
       next: (res) => {
-        const sanitized = (res.content || []).map(sanitizeProduct);
-        this.products.set(sanitized);
-        this.totalRecords.set(res.totalElements ?? sanitized.length);
+        this.products.set(res.content || []);
+        this.totalRecords.set(res.totalElements ?? (res.content || []).length);
         this.currentPage.set(res.page ?? page);
         this.pageSize.set(size);
         this.loading.set(false);
@@ -134,7 +134,8 @@ export class Products implements OnInit {
       name: product.name || '',
       barcode: product.barcode || '',
       unitOfMeasure: product.unitOfMeasure || UnitOfMeasureEnum.UN,
-      description: product.description || ''
+      description: product.description || '',
+      inventoryMinimum: product.inventoryMinimum || 0
     });
     this.dialogVisible.set(true);
   }
@@ -177,7 +178,8 @@ export class Products implements OnInit {
       name: raw.name.trim(),
       barcode: raw.barcode?.trim() || undefined,
       unitOfMeasure: raw.unitOfMeasure,
-      description: raw.description?.trim() || undefined
+      description: raw.description?.trim() || undefined,
+      inventoryMinimum: raw.inventoryMinimum || 0
     };
 
     this.saving.set(true);

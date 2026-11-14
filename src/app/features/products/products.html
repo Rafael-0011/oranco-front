@@ -93,8 +93,17 @@
       <app-input
         label="Descrição / Especificações Técnicas"
         formControlName="description"
-        placeholder="Ex: Aço carbono zincado para fixação pesada"
+        placeholder="Ex: Descrição"
       />
+
+       <!-- Quantidade minima -->
+      <app-input
+        label="Quantidade Mínima"
+        formControlName="inventoryMinimum"
+        type="number"
+        placeholder="Ex: 10"
+      />
+
 
       <div dialogFooter class="dialog-actions">
         <app-button
