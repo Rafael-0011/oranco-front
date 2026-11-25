@@ -14,6 +14,7 @@ import {
   SelectComponent,
   SelectOption,
   ConfirmDialogComponent,
+  ErrorDialogComponent,
   NotificationService
 } from '@shared';
 
@@ -30,7 +31,8 @@ import {
     DialogComponent,
     InputComponent,
     SelectComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    ErrorDialogComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './products.html',
@@ -54,6 +56,9 @@ export class Products implements OnInit {
 
   readonly dialogVisible = signal<boolean>(false);
   readonly confirmDeleteVisible = signal<boolean>(false);
+  readonly errorDialogVisible = signal<boolean>(false);
+  readonly currentError = signal<unknown>(null);
+  readonly errorFallbackMessage = signal<string>('Ocorreu um erro na operação com o produto.');
 
   readonly currentProduct = signal<ProductDTO | undefined>(undefined);
   readonly productToDelete = signal<ProductDTO | undefined>(undefined);
@@ -161,7 +166,10 @@ export class Products implements OnInit {
       error: (err) => {
         this.deleting.set(false);
         console.error('Erro ao excluir produto:', err);
-        this.notify.error('Não foi possível excluir o produto. Verifique se existem movimentações associadas.');
+        this.confirmDeleteVisible.set(false);
+        this.currentError.set(err);
+        this.errorFallbackMessage.set('Não foi possível excluir o produto. Verifique se existem movimentações ou estoques vinculados a ele.');
+        this.errorDialogVisible.set(true);
       }
     });
   }
@@ -200,7 +208,9 @@ export class Products implements OnInit {
       error: (err) => {
         this.saving.set(false);
         console.error('Erro ao salvar produto:', err);
-        this.notify.error('Não foi possível salvar o produto. Verifique os dados informados.');
+        this.currentError.set(err);
+        this.errorFallbackMessage.set('Não foi possível salvar o produto. Verifique os dados informados e tente novamente.');
+        this.errorDialogVisible.set(true);
       }
     });
   }

@@ -30,6 +30,7 @@ import {
   InputComponent,
   SelectComponent,
   SelectOption,
+  ErrorDialogComponent,
   NotificationService
 } from '@shared';
 
@@ -46,7 +47,8 @@ import {
     ButtonComponent,
     DialogComponent,
     InputComponent,
-    SelectComponent
+    SelectComponent,
+    ErrorDialogComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './transactions.html',
@@ -68,6 +70,9 @@ export class Transactions implements OnInit {
   readonly loading = signal<boolean>(false);
   readonly savingTransaction = signal<boolean>(false);
   readonly transactionDialogVisible = signal<boolean>(false);
+  readonly errorDialogVisible = signal<boolean>(false);
+  readonly currentError = signal<unknown>(null);
+  readonly errorFallbackMessage = signal<string>('Não foi possível registrar a movimentação.');
 
   readonly currentPage = signal<number>(0);
   readonly pageSize = signal<number>(10);
@@ -265,7 +270,9 @@ export class Transactions implements OnInit {
       error: (err) => {
         this.savingTransaction.set(false);
         console.error('Erro ao registrar movimentação:', err);
-        this.notify.error('Não foi possível registrar a movimentação.');
+        this.currentError.set(err);
+        this.errorFallbackMessage.set('Não foi possível registrar a movimentação. Verifique se há saldo disponível ou se os valores são válidos.');
+        this.errorDialogVisible.set(true);
       }
     });
   }

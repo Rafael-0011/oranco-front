@@ -12,5 +12,6 @@ export * from './data-table/data-table.types';
 export * from './data-table/data-table.directives';
 export * from './data-table/data-table.component';
 export * from './confirm-dialog/confirm-dialog.component';
+export * from './error-dialog/error-dialog.component';
 export * from './toast/toast.component';
 export * from './toast/notification.service';

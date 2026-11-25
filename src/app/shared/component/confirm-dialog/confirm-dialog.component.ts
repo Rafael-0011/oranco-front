@@ -26,7 +26,7 @@ export type ConfirmTone = 'danger' | 'warn' | 'info' | 'success';
       <p class="message">{{ message() }}</p>
       <ng-content />
 
-      <div dialogFooter>
+      <div dialogFooter class="dialog-actions">
         <app-button
           [label]="cancelLabel()" variant="secondary" appearance="outlined"
           [disabled]="loading()" (clicked)="cancel()"
@@ -38,7 +38,7 @@ export type ConfirmTone = 'danger' | 'warn' | 'info' | 'success';
       </div>
     </app-dialog>
   `,
-  styles: `.message { margin: 0; line-height: 1.5; color: var(--text-color, #1e293b); }`,
+  styles: `.message { margin: 0; line-height: 1.5; color: var(--text-color, #1e293b); } .dialog-actions{ display: flex; justify-content: flex-end; gap: 0.5rem; }`,
 })
 export class ConfirmDialogComponent {
   readonly visible = model<boolean>(false);

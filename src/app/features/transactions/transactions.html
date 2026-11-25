@@ -221,4 +221,12 @@
       </div>
     </form>
   </app-dialog>
+
+  <!-- Modal de Erro com resposta do backend / texto explicativo e confirmação -->
+  <app-error-dialog
+    [(visible)]="errorDialogVisible"
+    [error]="currentError()"
+    [fallbackMessage]="errorFallbackMessage()"
+    title="Erro na Transação"
+  />
 </div>

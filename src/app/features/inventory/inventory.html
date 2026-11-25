@@ -74,7 +74,12 @@
 
     <!-- Célula Customizada: Unidade de Medida -->
     <ng-template appCell="unitOfMeasure" let-row let-value="value">
-      <span class="uom-pill">{{ value || 'UN' }}</span>
+      <span class="uom-pill">{{ value || '-' }}</span>
+    </ng-template>
+
+    <!-- Célula Customizada: Código de Barras -->
+    <ng-template appCell="barcode" let-row let-value="value">
+      <span class="uom-pill">{{ value || '01' }}</span>
     </ng-template>
 
     <!-- Célula Customizada: Quantidade em Estoque -->
@@ -285,7 +290,7 @@
         />
         <app-button
           type="submit"
-          [label]="isEntry() ? 'Confirmar Entrada' : 'Confirmar Saída'"
+          [label]="isEntry() ? 'Confirmar' : 'Confirmar'"
           [icon]="isEntry() ? 'pi pi-arrow-down-left' : 'pi pi-arrow-up-right'"
           [variant]="isEntry() ? 'success' : 'danger'"
           [loading]="savingTransaction()"
@@ -294,4 +299,12 @@
       </div>
     </form>
   </app-dialog>
+
+  <!-- Modal de Erro com resposta do backend / texto explicativo e confirmação -->
+  <app-error-dialog
+    [(visible)]="errorDialogVisible"
+    [error]="currentError()"
+    [fallbackMessage]="errorFallbackMessage()"
+    title="Erro na Movimentação"
+  />
 </div>

@@ -35,6 +35,7 @@ import {
   SelectOption,
   KpiCardComponent,
   StatusBadgeComponent,
+  ErrorDialogComponent,
   NotificationService
 } from '@shared';
 
@@ -54,7 +55,8 @@ import {
     InputComponent,
     SelectComponent,
     KpiCardComponent,
-    StatusBadgeComponent
+    StatusBadgeComponent,
+    ErrorDialogComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inventory.html',
@@ -72,6 +74,9 @@ export class Inventory implements OnInit {
   readonly loading = signal<boolean>(false);
   readonly savingTransaction = signal<boolean>(false);
   readonly transactionDialogVisible = signal<boolean>(false);
+  readonly errorDialogVisible = signal<boolean>(false);
+  readonly currentError = signal<unknown>(null);
+  readonly errorFallbackMessage = signal<string>('Não foi possível registrar a movimentação de estoque.');
 
   readonly transactionType = signal<TransactionType>(TransactionType.INFLOW);
   readonly selectedProdId = signal<number | null>(null);
@@ -288,7 +293,9 @@ export class Inventory implements OnInit {
       error: (err) => {
         this.savingTransaction.set(false);
         console.error('Erro ao salvar movimentação:', err);
-        this.notify.error('Não foi possível registrar a movimentação de estoque.');
+        this.currentError.set(err);
+        this.errorFallbackMessage.set('Não foi possível registrar a movimentação de estoque. Verifique os dados e o saldo disponível.');
+        this.errorDialogVisible.set(true);
       }
     });
   }

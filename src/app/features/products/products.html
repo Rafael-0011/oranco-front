@@ -41,6 +41,11 @@
       <span class="uom-pill">{{ value || '-' }}</span>
     </ng-template>
 
+    <!-- Célula Customizada: Código de Barras -->
+    <ng-template appCell="barcode" let-row let-value="value">
+      <span class="uom-pill">{{ value || '01' }}</span>
+    </ng-template>
+
     <!-- Ações por Linha: Editar e Excluir -->
     <ng-template appRowActions let-row>
       <app-button
@@ -116,7 +121,7 @@
         />
         <app-button
           type="submit"
-          [label]="currentProduct() ? 'Atualizar Produto' : 'Salvar Produto'"
+          [label]="currentProduct() ? 'Atualizar' : 'Salvar'"
           icon="pi pi-check"
           variant="primary"
           [loading]="saving()"
@@ -135,5 +140,13 @@
     confirmLabel="Excluir"
     [loading]="deleting()"
     (confirmed)="confirmDelete()"
+  />
+
+  <!-- Modal de Erro com resposta do backend / texto explicativo e confirmação -->
+  <app-error-dialog
+    [(visible)]="errorDialogVisible"
+    [error]="currentError()"
+    [fallbackMessage]="errorFallbackMessage()"
+    title="Erro no Catálogo de Produtos"
   />
 </div>
